@@ -17,11 +17,11 @@ import {
     updateDoc,
     deleteDoc,
     query,
+    where,
     orderBy,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAgDvLzPn3I31-tOzfBTv8qFI2WpgdDG9M",
   authDomain: "online-jobs-a6370.firebaseapp.com",
@@ -46,6 +46,7 @@ const $ = id => document.getElementById(id),
     } [c]));
 const toast = m => {
     let t = $("toast");
+    if (!t) return;
     t.textContent = m;
     t.style.display = "block";
     setTimeout(() => t.style.display = "none", 3000)
@@ -98,7 +99,10 @@ async function getCol(name) {
     }
 }
 async function loadAll() {
-    [users, jobs, apps, subs, payouts, tickets] = await Promise.all(["users", "jobs", "applications", "submissions", "payoutRequests", "supportTickets"].map(getCol));
+    [users, jobs, apps, payouts, tickets] = await Promise.all(["users", "jobs", "applications", "payoutRequests", "supportTickets"].map(getCol));
+    // Applications data ko hi submissions ke liye use kar rahe hain kyunki saara task data wahin store ho raha hai
+    subs = apps;
+
     $("sUsers").textContent = users.length;
     $("sJobs").textContent = jobs.filter(x => x.active !== false).length;
     $("sApps").textContent = apps.length;
@@ -128,7 +132,7 @@ function renderApps() {
 }
 
 function renderSubs() {
-    $("submissionsTable").innerHTML = table(`<tr><th>User</th><th>Task</th><th>Reward</th><th>Status</th><th>Action</th></tr>` + subs.map(s => `<tr><td>${esc(s.userEmail||s.userId)}</td><td>${esc(s.jobTitle)}</td><td>${money(s.reward)}</td><td>${esc(s.status)}</td><td>${s.status==="pending"?`<button class="btn success" onclick="reviewSub('${s.id}',true)">Approve</button><button class="btn danger" onclick="reviewSub('${s.id}',false)">Reject</button>`:"—"}</td></tr>`).join(""));
+    $("submissionsTable").innerHTML = table(`<tr><th>User</th><th>Task</th><th>Reward</th><th>Status</th><th>Action</th></tr>` + subs.map(s => `<tr><td>${esc(s.userEmail||s.userId)}</td><td>${esc(s.jobTitle)}</td><td>${money(s.reward)}</td><td>${esc(s.status||"pending")}</td><td>${s.status==="pending" || !s.status?`<button class="btn success" onclick="reviewSub('${s.id}',true)">Approve</button><button class="btn danger" onclick="reviewSub('${s.id}',false)">Reject</button>`:"—"}</td></tr>`).join(""));
 }
 
 function renderPayouts() {
@@ -214,30 +218,50 @@ window.verifyApp = async (id, ok) => {
         toast(e.message)
     }
 };
+
 window.reviewSub = async (id, ok) => {
     try {
-        await updateDoc(doc(db, "submissions", id), {
+        let subDoc = apps.find(s => s.id === id);
+        if (!subDoc) return;
+
+        await updateDoc(doc(db, "applications", id), {
             status: ok ? "approved" : "rejected",
             reviewedAt: serverTimestamp()
         });
-        toast(ok ? "Submission approved." : "Submission rejected.");
-        loadAll()
+
+        toast(ok ? "Task approved and wallet updated." : "Task rejected.");
+        loadAll();
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
+
 window.markPayout = async (id, status) => {
     try {
+        let payoutDoc = payouts.find(p => p.id === id);
+        if (!payoutDoc) return;
+
         await updateDoc(doc(db, "payoutRequests", id), {
             status,
             processedAt: serverTimestamp()
         });
-        toast("Payout updated.");
-        loadAll()
+
+        if (status === "paid" && payoutDoc.userId) {
+            let q = query(collection(db, "applications"), where("userId", "==", payoutDoc.userId), where("status", "==", "approved"));
+            let querySnapshot = await getDocs(q);
+            let updatePromises = querySnapshot.docs.map(appDoc => 
+                updateDoc(doc(db, "applications", appDoc.id), { status: "paid" })
+            );
+            await Promise.all(updatePromises);
+        }
+
+        toast("Payout updated and wallet adjusted.");
+        loadAll();
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
+
 window.closeTicket = async id => {
     try {
         await updateDoc(doc(db, "supportTickets", id), {
