@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#15162a"><title>WorkNest Admin</title>
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<aside class="sidebar">
+  <a class="admin-logo" href="admin.html"><span>W</span> WorkNest <small>ADMIN</small></a>
+  <nav>
+    <button class="active" data-tab="overview">📊 Dashboard</button>
+    <button data-tab="users">👥 Manage Users</button>
+    <button data-tab="jobs">➕ Manage Jobs</button>
+    <button data-tab="applications">💳 Applications / Payments</button>
+    <button data-tab="submissions">📥 Submissions</button>
+    <button data-tab="payouts">💸 Payout Requests</button>
+    <button data-tab="tickets">🎫 Support Tickets</button>
+  </nav>
+  <button id="backUser" class="side-bottom">← User Website</button>
+  <button id="logout" class="side-bottom">🚪 Logout</button>
+</aside>
+<main class="main">
+<header class="admin-head"><div><span>CONTROL CENTER</span><h1 id="pageTitle">Dashboard</h1></div><div id="adminEmail" class="admin-email"></div></header>
+
+<section id="overview" class="tab active">
+ <div class="cards">
+  <div class="card"><small>Registered users</small><b id="sUsers">0</b></div>
+  <div class="card"><small>Active jobs</small><b id="sJobs">0</b></div>
+  <div class="card"><small>Applications</small><b id="sApps">0</b></div>
+  <div class="card"><small>Pending verification</small><b id="sVerify">0</b></div>
+ </div>
+ <div class="grid2"><div class="panel"><h3>Payment verification</h3><p>Review transaction/reference IDs submitted by users before approving applications.</p><button class="btn primary" data-go="applications">Review payments</button></div><div class="panel"><h3>Work review</h3><p>Approve or reject completed submissions and credit rewards according to your published terms.</p><button class="btn primary" data-go="submissions">Review submissions</button></div></div>
+</section>
+
+<section id="users" class="tab">
+ <div class="toolbar"><div><h2>Manage Users</h2><p>View account information and control account status.</p></div><input id="userSearch" placeholder="Search name / email / mobile"></div>
+ <div id="usersTable"></div>
+</section>
+
+<section id="jobs" class="tab">
+ <div class="toolbar"><div><h2>Jobs</h2><p>Create and manage available work.</p></div><button class="btn primary" id="newJob">＋ Add New Job</button></div>
+ <div id="jobsTable"></div>
+</section>
+
+<section id="applications" class="tab">
+ <div class="toolbar"><div><h2>Applications & Payments</h2><p>Verify payment references before activating an application.</p></div></div>
+ <div id="appsTable"></div>
+</section>
+
+<section id="submissions" class="tab">
+ <div class="toolbar"><div><h2>Review Submissions</h2><p>Approve or reject completed work.</p></div></div>
+ <div id="submissionsTable"></div>
+</section>
+
+<section id="payouts" class="tab">
+ <div class="toolbar"><div><h2>Payout Requests</h2><p>Review eligible payout requests and mark paid only after sending payment.</p></div></div>
+ <div id="payoutsTable"></div>
+</section>
+
+<section id="tickets" class="tab">
+ <div class="toolbar"><div><h2>Support Tickets</h2><p>Respond to user support requests.</p></div></div>
+ <div id="ticketsTable"></div>
+</section>
+</main>
+
+<div id="jobModal" class="modal hidden"><div class="modal-card"><button class="close" id="closeJob">×</button><h2 id="jobModalTitle">Add Job</h2>
+<form id="jobForm" class="form">
+<input type="hidden" id="jobId">
+<label>Job title<input id="jTitle" required></label>
+<label>Category<select id="jCategory"><option>Data Entry</option><option>Typing</option><option>Writing</option><option>Other</option></select></label>
+<label>Description<textarea id="jDesc" rows="3" required></textarea></label>
+<div class="two"><label>Application fee (₹)<input id="jFee" type="number" min="0" required></label><label>Task reward (₹)<input id="jReward" type="number" min="0" required></label></div>
+<label>Available slots<input id="jSlots" type="number" min="0" value="100"></label>
+<label class="check"><input id="jActive" type="checkbox" checked> Job active</label>
+<button class="btn primary">Save job</button>
+</form></div></div>
+
+<script type="module" src="assets/admin.js"></script>
+</body></html>

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#5b5bf7">
+    <title>WorkNest — Online Work</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+
+<body>
+    <div id="toast" class="toast"></div>
+
+    <header class="header">
+        <a class="logo" href="#home"><span>W</span> WorkNest</a>
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <nav id="nav">
+            <a href="#home">Home</a><a href="#jobs">Jobs</a><a href="#tasks">My Tasks</a>
+            <a href="#wallet">Wallet</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+        </nav>
+        <div id="authButtons" class="auth-buttons">
+            <button class="btn btn-light" data-modal="login">Login</button>
+            <button class="btn btn-primary" data-modal="signup">Sign Up</button>
+        </div>
+        <div id="userArea" class="user-area hidden">
+            <button id="userBtn" class="user-btn"><span id="userInitial">U</span><span id="userShort">Account</span>⌄</button>
+            <div id="userDrop" class="user-drop">
+                <a href="#profile">👤 Profile</a><a href="#payment">💳 Payment Details</a>
+                <a href="#password">🔒 Change Password</a><button id="logoutBtn">🚪 Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-copy">
+                <div class="badge">● ONLINE WORK PLATFORM</div>
+                <h1>Simple work.<br><em>Clear progress.</em></h1>
+                <p>Find typing, data entry and writing tasks, apply, submit your work and track your status from one dashboard.</p>
+                <div class="hero-actions"><a class="btn btn-primary btn-lg" href="#jobs">Explore Jobs →</a><button class="btn btn-light btn-lg" data-modal="signup">Create free account</button></div>
+                <div class="trust"><span>✓ Email login</span><span>✓ Task tracking</span><span>✓ Payout requests</span></div>
+            </div>
+            <div class="hero-visual">
+                <div class="dash-preview">
+                    <div class="preview-top"><span>Dashboard</span><i>•••</i></div>
+                    <div class="mini-stats">
+                        <div><small>Available</small><b id="heroJobs">0</b></div>
+                        <div><small>Active tasks</small><b>0</b></div>
+                    </div>
+                    <div class="mini-job"><span class="dot purple"></span>
+                        <div><b>Data Entry Project</b><small>Application fee ₹199</small></div><strong>₹700</strong>
+                    </div>
+                    <div class="mini-job"><span class="dot blue"></span>
+                        <div><b>Typing Task</b><small>Application fee ₹150</small></div><strong>₹500</strong>
+                    </div>
+                    <div class="mini-job"><span class="dot green"></span>
+                        <div><b>Writing Task</b><small>Application fee ₹100</small></div><strong>₹350</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="notice"><b>Before you apply:</b> Any application fee is shown before payment. Paying a fee does not guarantee work, approval, income or payout. Check each job's terms and refund policy.</section>
+
+        <section id="dashboard" class="section hidden">
+            <div class="section-title">
+                <div><span>PERSONAL DASHBOARD</span>
+                    <h2>Welcome, <strong id="welcomeName">User</strong></h2>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><small>Available jobs</small><b id="dashJobs">0</b></div>
+                <div class="stat-card"><small>Active tasks</small><b id="dashActive">0</b></div>
+                <div class="stat-card"><small>Approved earnings</small><b id="dashEarnings">₹0</b></div>
+                <div class="stat-card"><small>Pending submissions</small><b id="dashPending">0</b></div>
+            </div>
+        </section>
+
+        <section id="jobs" class="section">
+            <div class="section-title row">
+                <div><span>WORK OPPORTUNITIES</span>
+                    <h2>Available Jobs</h2>
+                    <p>Choose a category and view the full fee and reward before applying.</p>
+                </div><select id="jobFilter">
+                    <option value="all">All jobs</option>
+                    <option>Data Entry</option>
+                    <option>Typing</option>
+                    <option>Writing</option>
+                </select>
+            </div>
+            <div id="jobsGrid" class="jobs-grid"></div>
+        </section>
+
+        <section id="tasks" class="section protected">
+            <div class="section-title"><span>WORK TRACKER</span>
+                <h2>My Tasks & Submissions</h2>
+            </div>
+            <div id="tasksBox"></div>
+        </section>
+
+        <section id="wallet" class="section protected">
+            <div class="section-title"><span>YOUR MONEY</span>
+                <h2>Wallet & Earnings</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><small>Approved balance</small><b id="walletBalance">₹0</b></div>
+                <div class="stat-card"><small>Pending payout</small><b id="walletPending">₹0</b></div>
+                <div class="stat-card"><small>Total paid</small><b id="walletPaid">₹0</b></div>
+            </div>
+            <div class="panel payout-panel">
+                <div>
+                    <h3>Request a payout</h3>
+                    <p>Minimum payout ₹500. Make sure your UPI/bank details are correct.</p>
+                </div><button id="payoutBtn" class="btn btn-primary">Request payout</button>
+            </div>
+            <div id="payoutHistory"></div>
+        </section>
+
+        <section id="profile" class="section protected">
+            <div class="section-title"><span>ACCOUNT</span>
+                <h2>Profile Settings</h2>
+            </div>
+            <form id="profileForm" class="panel form">
+                <div class="form-grid"><label>Full name<input id="pName" required></label><label>Mobile<input id="pMobile"></label><label>City<input id="pCity"></label><label>Email<input id="pEmail" type="email" disabled></label></div><button class="btn btn-primary">Save changes</button>
+            </form>
+        </section>
+
+        <section id="payment" class="section protected">
+            <div class="section-title"><span>PAYOUT SETUP</span>
+                <h2>Payment / Bank Details</h2>
+            </div>
+            <form id="paymentForm" class="panel form">
+                <div class="form-grid"><label>UPI ID<input id="upi" placeholder="name@upi"></label><label>Account holder<input id="holder"></label><label>Bank account<input id="bankAccount" inputmode="numeric"></label><label>IFSC<input id="ifsc"></label></div><button class="btn btn-primary">Save payout details</button>
+            </form>
+        </section>
+
+        <section id="password" class="section protected">
+            <div class="section-title"><span>SECURITY</span>
+                <h2>Change Password</h2>
+            </div>
+            <form id="passwordForm" class="panel form narrow"><label>New password<input id="newPassword" type="password" minlength="6" required></label><button class="btn btn-primary">Update password</button></form>
+        </section>
+
+        <section id="faq" class="section">
+            <div class="section-title"><span>HELP CENTER</span>
+                <h2>Frequently Asked Questions</h2>
+            </div>
+            <div class="faq">
+                <details>
+                    <summary>Does an application fee guarantee a job?</summary>
+                    <p>No. The fee is an application/platform charge. It must not be presented as a guarantee of work, approval, income or payout.</p>
+                </details>
+                <details>
+                    <summary>When is a task reward credited?</summary>
+                    <p>After the submitted work is reviewed and approved under that job's published terms.</p>
+                </details>
+                <details>
+                    <summary>How do I request a payout?</summary>
+                    <p>Complete your payout details, reach the minimum threshold and submit a payout request from Wallet.</p>
+                </details>
+                <details>
+                    <summary>Where can I get support?</summary>
+                    <p>Use the Contact section to submit a support ticket.</p>
+                </details>
+            </div>
+        </section>
+
+        <section id="contact" class="section">
+            <div class="section-title"><span>SUPPORT</span>
+                <h2>Contact Us</h2>
+            </div>
+            <form id="contactForm" class="panel form narrow"><label>Name<input id="cName" required></label><label>Email<input id="cEmail" type="email" required></label><label>Message<textarea id="cMessage" rows="5" required></textarea></label><button class="btn btn-primary">Send support request</button></form>
+        </section>
+    </main>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-card"><button class="modal-close" id="closeModal">×</button>
+            <div id="loginBox">
+                <div class="modal-icon">↪</div>
+                <h2>Welcome back</h2>
+                <p>Login with your email and password.</p>
+                <form id="loginForm" class="form"><label>Email<input id="loginEmail" type="email" required></label><label>Password<input id="loginPassword" type="password" required></label><button class="btn btn-primary">Login</button></form><button class="switch" id="switchSignup">Create a new account →</button>
+            </div>
+            <div id="signupBox" class="hidden">
+                <div class="modal-icon">✦</div>
+                <h2>Create your account</h2>
+                <p>Account registration is free.</p>
+                <form id="signupForm" class="form"><label>Name<input id="sName" required></label><label>Mobile<input id="sMobile" required></label><label>City<input id="sCity" required></label><label>Email<input id="sEmail" type="email" required></label><label>Password<input id="sPassword" type="password" minlength="6" required></label><button class="btn btn-primary">Create account</button></form><button class="switch" id="switchLogin">Already registered? Login →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="modal hidden">
+        <div class="modal-card payment-card"><button class="modal-close" id="closePayment">×</button>
+            <div class="modal-icon">₹</div>
+            <h2 id="payTitle">Apply for job</h2>
+            <p id="payDesc"></p>
+            <div class="amount-box"><span>Application fee</span><strong id="payAmount">₹0</strong></div>
+            <div class="qr-wrap">
+                <div id="qrLoading">Generating payment QR…</div><img id="paymentQr" alt="UPI payment QR" class="qr hidden">
+            </div>
+            <div class="upi-box"><small>Pay using UPI</small><b id="merchantUpi">vishalkhan@fam</b><button id="copyUpi" class="copy">Copy</button></div>
+            <p class="payment-note">After paying, enter your UPI transaction/reference ID. The payment must be verified before the application is treated as paid.</p>
+            <form id="paymentFormModal" class="form"><label>UPI transaction / reference ID<input id="txnId" required placeholder="e.g. 123456789012"></label><button class="btn btn-primary">Submit payment reference</button></form>
+        </div>
+    </div>
+
+    <script type="module" src="assets/app.js"></script>
+</body>
+
+</html>
