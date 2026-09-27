@@ -23,7 +23,6 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAgDvLzPn3I31-tOzfBTv8qFI2WpgdDG9M",
   authDomain: "online-jobs-a6370.firebaseapp.com",
@@ -34,56 +33,73 @@ const firebaseConfig = {
   appId: "1:248277964605:web:a47f9fe272ef5b6f419754",
   measurementId: "G-XRJZD4J0CV"
 };
+
 const app = initializeApp(firebaseConfig),
     auth = getAuth(app),
     db = getFirestore(app);
+
 const UPI_ID = "vishalkhan@fam";
 const $ = id => document.getElementById(id);
 let currentUser = null,
     jobs = [];
+
 const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#39;"
-} [c]));
+}[c]));
+
 const money = n => "₹" + Number(n || 0).toLocaleString("en-IN");
+
 const toast = m => {
     let t = $("toast");
+    if (!t) return;
     t.textContent = m;
     t.style.display = "block";
-    setTimeout(() => t.style.display = "none", 3200)
+    setTimeout(() => t.style.display = "none", 3200);
 };
 
 function modal(id) {
-    $(id).classList.remove("hidden")
+    let el = $(id);
+    if (el) el.classList.remove("hidden");
 }
 
 function close(id) {
-    $(id).classList.add("hidden")
+    let el = $(id);
+    if (el) el.classList.add("hidden");
 }
 
-document.querySelectorAll("[data-modal]").forEach(b => b.onclick = () => {
-    modal("modal");
-    $("loginBox").classList.toggle("hidden", b.dataset.modal !== "login");
-    $("signupBox").classList.toggle("hidden", b.dataset.modal !== "signup")
+document.querySelectorAll("[data-modal]").forEach(b => {
+    b.onclick = () => {
+        modal("modal");
+        let loginBox = $("loginBox");
+        let signupBox = $("signupBox");
+        if (loginBox) loginBox.classList.toggle("hidden", b.dataset.modal !== "login");
+        if (signupBox) signupBox.classList.toggle("hidden", b.dataset.modal !== "signup");
+    };
 });
-$("closeModal").onclick = () => close("modal");
-$("switchSignup").onclick = () => {
-    $("loginBox").classList.add("hidden");
-    $("signupBox").classList.remove("hidden")
-};
-$("switchLogin").onclick = () => {
-    $("signupBox").classList.add("hidden");
-    $("loginBox").classList.remove("hidden")
-};
-$("userBtn").onclick = () => $("userDrop").classList.toggle("hidden");
-$("logoutBtn").onclick = () => signOut(auth);
-$("menuBtn").onclick = () => document.querySelector("nav").classList.toggle("mobile-open");
-document.querySelectorAll("nav a").forEach(a => a.onclick = () => document.querySelector("nav").classList.remove("mobile-open"));
 
-const demo = [{
+if ($("closeModal")) $("closeModal").onclick = () => close("modal");
+if ($("switchSignup")) $("switchSignup").onclick = () => {
+    $("loginBox")?.classList.add("hidden");
+    $("signupBox")?.classList.remove("hidden");
+};
+if ($("switchLogin")) $("switchLogin").onclick = () => {
+    $("signupBox")?.classList.add("hidden");
+    $("loginBox")?.classList.remove("hidden");
+};
+if ($("userBtn")) $("userBtn").onclick = () => $("userDrop")?.classList.toggle("hidden");
+if ($("logoutBtn")) $("logoutBtn").onclick = () => signOut(auth);
+if ($("menuBtn")) $("menuBtn").onclick = () => document.querySelector("nav")?.classList.toggle("mobile-open");
+
+document.querySelectorAll("nav a").forEach(a => {
+    a.onclick = () => document.querySelector("nav")?.classList.remove("mobile-open");
+});
+
+const demo = [
+    {
         id: "demo-data",
         title: "Data Entry Project",
         category: "Data Entry",
@@ -111,73 +127,97 @@ const demo = [{
         icon: "✎"
     }
 ];
+
 async function loadJobs() {
     try {
         let s = await getDocs(query(collection(db, "jobs"), orderBy("createdAt", "desc")));
         jobs = s.docs.map(d => ({
             id: d.id,
             ...d.data()
-        })).filter(x => x.active !== false)
+        })).filter(x => x.active !== false);
     } catch (e) {
-        jobs = demo
+        jobs = demo;
     }
     if (!jobs.length) jobs = demo;
-    $("heroJobs").textContent = jobs.length;
-    $("dashJobs").textContent = jobs.length;
+    if ($("heroJobs")) $("heroJobs").textContent = jobs.length;
+    if ($("dashJobs")) $("dashJobs").textContent = jobs.length;
     renderJobs();
 }
 
 function renderJobs() {
-    let f = $("jobFilter").value;
+    let filterEl = $("jobFilter");
+    let gridEl = $("jobsGrid");
+    if (!filterEl || !gridEl) return;
+    let f = filterEl.value;
     let list = jobs.filter(j => f === "all" || j.category === f);
-    $("jobsGrid").innerHTML = list.map(j => `<article class="job-card"><div class="job-icon">${esc(j.icon||"✓")}</div><span class="tag">${esc(j.category||"Other")}</span><h3>${esc(j.title)}</h3><p>${esc(j.description||"See complete job details before applying.")}</p><div class="job-meta"><div><small>Application fee</small><b class="fee">${money(j.fee)}</b></div><div><small>Published reward</small><b class="reward">${money(j.reward)}</b></div></div><div class="job-actions"><button class="btn btn-primary" onclick="applyJob('${j.id}')">View & Apply</button></div></article>`).join("");
+    
+    let html = "";
+    for (let j of list) {
+        html += '<article class="job-card">';
+        html += '<div class="job-icon">' + esc(j.icon || "✓") + '</div>';
+        html += '<span class="tag">' + esc(j.category || "Other") + '</span>';
+        html += '<h3>' + esc(j.title) + '</h3>';
+        html += '<p>' + esc(j.description || "See complete job details before applying.") + '</p>';
+        html += '<div class="job-meta">';
+        html += '<div><small>Application fee</small><b class="fee">' + money(j.fee) + '</b></div>';
+        html += '<div><small>Published reward</small><b class="reward">' + money(j.reward) + '</b></div>';
+        html += '</div>';
+        html += '<div class="job-actions"><button class="btn btn-primary" onclick="window.applyJob(\'' + j.id + '\')">View & Apply</button></div>';
+        html += '</article>';
+    }
+    gridEl.innerHTML = html;
 }
-$("jobFilter").onchange = renderJobs;
+
+if ($("jobFilter")) $("jobFilter").onchange = renderJobs;
 
 window.applyJob = async id => {
     if (!currentUser) {
         toast("Login required to apply.");
         modal("modal");
-        $("loginBox").classList.remove("hidden");
-        $("signupBox").classList.add("hidden");
-        return
+        $("loginBox")?.classList.remove("hidden");
+        $("signupBox")?.classList.add("hidden");
+        return;
     }
     let j = jobs.find(x => x.id === id);
     if (!j) return;
-    $("payTitle").textContent = j.title;
-    $("payDesc").textContent = `Application fee for this task is ${money(j.fee)}. The fee does not guarantee work, approval, income or payout.`;
-    $("payAmount").textContent = money(j.fee);
-    $("merchantUpi").textContent = UPI_ID;
-    $("txnId").value = "";
-    $("paymentQr").classList.add("hidden");
-    $("qrLoading").classList.remove("hidden");
+    if ($("payTitle")) $("payTitle").textContent = j.title;
+    if ($("payDesc")) $("payDesc").textContent = "Application fee for this task is " + money(j.fee) + ". The fee does not guarantee work, approval, income or payout.";
+    if ($("payAmount")) $("payAmount").textContent = money(j.fee);
+    if ($("merchantUpi")) $("merchantUpi").textContent = UPI_ID;
+    if ($("txnId")) $("txnId").value = "";
+    $("paymentQr")?.classList.add("hidden");
+    $("qrLoading")?.classList.remove("hidden");
     modal("paymentModal");
-    // UPI deep link with exact amount. QR image is generated by a public QR image endpoint; replace with your own QR generator/backend in production if desired.
-    const uri = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent("WorkNest")}&am=${encodeURIComponent(Number(j.fee).toFixed(2))}&cu=INR&tn=${encodeURIComponent("WorkNest "+j.title)}`;
-    $("paymentQr").src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(uri);
-    $("paymentQr").onload = () => {
-        $("qrLoading").classList.add("hidden");
-        $("paymentQr").classList.remove("hidden")
-    };
+
+    const uri = "upi://pay?pa=" + encodeURIComponent(UPI_ID) + "&pn=" + encodeURIComponent("WorkNest") + "&am=" + encodeURIComponent(Number(j.fee).toFixed(2)) + "&cu=INR&tn=" + encodeURIComponent("WorkNest " + j.title);
+    let qrImg = $("paymentQr");
+    if (qrImg) {
+        qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(uri);
+        qrImg.onload = () => {
+            $("qrLoading")?.classList.add("hidden");
+            qrImg.classList.remove("hidden");
+        };
+    }
     window.pendingJob = j;
 };
-$("closePayment").onclick = () => close("paymentModal");
-$("copyUpi").onclick = async () => {
+
+if ($("closePayment")) $("closePayment").onclick = () => close("paymentModal");
+if ($("copyUpi")) $("copyUpi").onclick = async () => {
     try {
         await navigator.clipboard.writeText(UPI_ID);
-        toast("UPI ID copied.")
+        toast("UPI ID copied.");
     } catch (e) {
-        toast(UPI_ID)
+        toast(UPI_ID);
     }
 };
 
-$("paymentFormModal").onsubmit = async e => {
+if ($("paymentFormModal")) $("paymentFormModal").onsubmit = async e => {
     e.preventDefault();
     if (!currentUser || !window.pendingJob) return;
-    let txn = $("txnId").value.trim();
+    let txn = $("txnId")?.value.trim() || "";
     if (txn.length < 6) {
         toast("Enter a valid transaction/reference ID.");
-        return
+        return;
     }
     try {
         await addDoc(collection(db, "applications"), {
@@ -197,12 +237,13 @@ $("paymentFormModal").onsubmit = async e => {
         });
         close("paymentModal");
         toast("Payment reference submitted for verification.");
+        loadTasks();
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
 
-$("signupForm").onsubmit = async e => {
+if ($("signupForm")) $("signupForm").onsubmit = async e => {
     e.preventDefault();
     try {
         let c = await createUserWithEmailAndPassword(auth, $("sEmail").value.trim(), $("sPassword").value);
@@ -217,53 +258,56 @@ $("signupForm").onsubmit = async e => {
         close("modal");
         toast("Account created.");
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
-$("loginForm").onsubmit = async e => {
+
+if ($("loginForm")) $("loginForm").onsubmit = async e => {
     e.preventDefault();
     try {
         await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value);
         close("modal");
         toast("Login successful.");
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
 
 onAuthStateChanged(auth, async u => {
     currentUser = u;
-    $("authButtons").classList.toggle("hidden", !!u);
-    $("userArea").classList.toggle("hidden", !u);
-    $("dashboard").classList.toggle("hidden", !u);
+    $("authButtons")?.classList.toggle("hidden", !!u);
+    $("userArea")?.classList.toggle("hidden", !u);
+    $("dashboard")?.classList.toggle("hidden", !u);
     document.querySelectorAll(".protected").forEach(x => x.classList.toggle("hidden", !u));
     if (!u) return;
-    $("userInitial").textContent = (u.email || "U")[0].toUpperCase();
-    $("userShort").textContent = (u.email || "Account").split("@")[0];
-    $("pEmail").value = u.email;
-    $("cEmail").value = u.email;
+
+    if ($("userInitial")) $("userInitial").textContent = (u.email || "U")[0].toUpperCase();
+    if ($("userShort")) $("userShort").textContent = (u.email || "Account").split("@")[0];
+    if ($("pEmail")) $("pEmail").value = u.email;
+    if ($("cEmail")) $("cEmail").value = u.email;
+
     try {
         let s = await getDoc(doc(db, "users", u.uid)),
             d = s.data() || {};
         if (d.role === "admin") {
             let drop = $("userDrop");
-            if (!document.getElementById("adminLink")) {
+            if (drop && !document.getElementById("adminLink")) {
                 let a = document.createElement("a");
                 a.id = "adminLink";
                 a.href = "admin.html";
                 a.textContent = "🛠 Admin Panel";
-                drop.insertBefore(a, drop.firstChild)
+                drop.insertBefore(a, drop.firstChild);
             }
         }
-        $("pName").value = d.name || "";
-        $("pMobile").value = d.mobile || "";
-        $("pCity").value = d.city || "";
-        $("welcomeName").textContent = d.name || u.email.split("@")[0];
-        $("cName").value = d.name || "";
-        $("upi").value = d.upi || "";
-        $("holder").value = d.holder || "";
-        $("bankAccount").value = d.bankAccount || "";
-        $("ifsc").value = d.ifsc || ""
+        if ($("pName")) $("pName").value = d.name || "";
+        if ($("pMobile")) $("pMobile").value = d.mobile || "";
+        if ($("pCity")) $("pCity").value = d.city || "";
+        if ($("welcomeName")) $("welcomeName").textContent = d.name || u.email.split("@")[0];
+        if ($("cName")) $("cName").value = d.name || "";
+        if ($("upi")) $("upi").value = d.upi || "";
+        if ($("holder")) $("holder").value = d.holder || "";
+        if ($("bankAccount")) $("bankAccount").value = d.bankAccount || "";
+        if ($("ifsc")) $("ifsc").value = d.ifsc || "";
     } catch (e) {}
     await loadTasks();
 });
@@ -276,73 +320,124 @@ async function loadTasks() {
             id: d.id,
             ...d.data()
         }));
-        $("tasksBox").innerHTML = rows.length ? `<div class="table-wrap"><table class="table"><tr><th>Job</th><th>Fee</th><th>Payment</th><th>Status</th></tr>${rows.map(r=>`<tr><td>${esc(r.jobTitle)}</td><td>${money(r.fee)}</td><td>${esc(r.paymentStatus||"—")}</td><td class="status ${esc(r.status||"pending")}">${esc(r.status||"pending")}</td></tr>`).join("")}</table></div>` : `<div class="panel">You have no applications yet. Browse Available Jobs to get started.</div>`;
-        $("dashActive").textContent = rows.filter(x => x.status === "pending").length;
-        $("dashPending").textContent = rows.filter(x => x.paymentStatus === "submitted_for_verification").length;
-        $("dashEarnings").textContent = money(rows.filter(x => x.status === "approved").reduce((a, x) => a + Number(x.reward || 0), 0));
-        $("walletBalance").textContent = $("dashEarnings").textContent;
+        
+        let tasksBox = $("tasksBox");
+        if (tasksBox) {
+            if (rows.length > 0) {
+                let tableHtml = '<div class="table-wrap"><table class="table"><tr><th>Job</th><th>Fee</th><th>Payment</th><th>Status</th></tr>';
+                for (let r of rows) {
+                    tableHtml += '<tr><td>' + esc(r.jobTitle) + '</td><td>' + money(r.fee) + '</td><td>' + esc(r.paymentStatus || "—") + '</td><td class="status ' + esc(r.status || "pending") + '">' + esc(r.status || "pending") + '</td></tr>';
+                }
+                tableHtml += '</table></div>';
+                tasksBox.innerHTML = tableHtml;
+            } else {
+                tasksBox.innerHTML = '<div class="panel">You have no applications yet. Browse Available Jobs to get started.</div>';
+            }
+        }
+
+        if ($("dashActive")) $("dashActive").textContent = rows.filter(x => x.status === "pending").length;
+        if ($("dashPending")) $("dashPending").textContent = rows.filter(x => x.paymentStatus === "submitted_for_verification").length;
+        
+        let approvedEarnings = rows.filter(x => x.status === "approved").reduce((a, x) => a + Number(x.reward || 0), 0);
+        let pendingEarnings = rows.filter(x => x.status === "pending").reduce((a, x) => a + Number(x.reward || 0), 0);
+        
+        if ($("dashEarnings")) $("dashEarnings").textContent = money(approvedEarnings);
+        if ($("walletBalance")) $("walletBalance").textContent = money(approvedEarnings);
+        if ($("walletPending")) $("walletPending").textContent = money(pendingEarnings);
+        if ($("walletPaid")) $("walletPaid").textContent = "₹0";
     } catch (e) {
-        $("tasksBox").innerHTML = '<div class="panel">Could not load your tasks. Check Firebase configuration/rules.</div>'
+        let tasksBox = $("tasksBox");
+        if (tasksBox) tasksBox.innerHTML = '<div class="panel">Could not load your tasks. Check Firebase configuration/rules.</div>';
     }
 }
-$("profileForm").onsubmit = async e => {
+
+if ($("profileForm")) $("profileForm").onsubmit = async e => {
     e.preventDefault();
     try {
         await setDoc(doc(db, "users", currentUser.uid), {
-            name: $("pName").value.trim(),
-            mobile: $("pMobile").value.trim(),
-            city: $("pCity").value.trim()
-        }, {
-            merge: true
-        });
-        $("welcomeName").textContent = $("pName").value.trim();
-        toast("Profile saved.")
+            name: $("pName")?.value.trim() || "",
+            mobile: $("pMobile")?.value.trim() || "",
+            city: $("pCity")?.value.trim() || ""
+        }, { merge: true });
+        if ($("welcomeName")) $("welcomeName").textContent = $("pName")?.value.trim() || "";
+        toast("Profile saved.");
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
-$("paymentForm").onsubmit = async e => {
+
+if ($("paymentForm")) $("paymentForm").onsubmit = async e => {
     e.preventDefault();
     try {
         await setDoc(doc(db, "users", currentUser.uid), {
-            upi: $("upi").value.trim(),
-            holder: $("holder").value.trim(),
-            bankAccount: $("bankAccount").value.trim(),
-            ifsc: $("ifsc").value.trim()
-        }, {
-            merge: true
-        });
-        toast("Payout details saved.")
+            upi: $("upi")?.value.trim() || "",
+            holder: $("holder")?.value.trim() || "",
+            bankAccount: $("bankAccount")?.value.trim() || "",
+            ifsc: $("ifsc")?.value.trim() || ""
+        }, { merge: true });
+        toast("Payout details saved.");
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
-$("passwordForm").onsubmit = async e => {
+
+if ($("passwordForm")) $("passwordForm").onsubmit = async e => {
     e.preventDefault();
     try {
         await updatePassword(currentUser, $("newPassword").value);
-        $("newPassword").value = "";
-        toast("Password updated.")
+        if ($("newPassword")) $("newPassword").value = "";
+        toast("Password updated.");
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
-$("payoutBtn").onclick = () => toast("Payout request can be submitted after the ₹500 minimum and payout details are verified.");
-$("contactForm").onsubmit = async e => {
+
+if ($("payoutBtn")) $("payoutBtn").onclick = async () => {
+    if (!currentUser) {
+        toast("Please login first.");
+        return;
+    }
+    try {
+        let s = await getDocs(query(collection(db, "applications"), where("userId", "==", currentUser.uid)));
+        let rows = s.docs.map(d => d.data());
+        let approvedEarnings = rows.filter(x => x.status === "approved").reduce((a, x) => a + Number(x.reward || 0), 0);
+        
+        if (approvedEarnings < 500) {
+            toast("Minimum payout amount is ₹500.");
+            return;
+        }
+
+        await addDoc(collection(db, "payoutRequests"), {
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            amount: approvedEarnings,
+            status: "pending",
+            createdAt: serverTimestamp()
+        });
+
+        toast("Payout request submitted successfully!");
+        if ($("dashPending")) $("dashPending").textContent = "Requested";
+    } catch (e) {
+        toast(e.message);
+    }
+};
+
+if ($("contactForm")) $("contactForm").onsubmit = async e => {
     e.preventDefault();
     try {
         await addDoc(collection(db, "supportTickets"), {
             userId: currentUser?.uid || null,
-            name: $("cName").value,
-            email: $("cEmail").value,
-            message: $("cMessage").value,
+            name: $("cName")?.value || "",
+            email: $("cEmail")?.value || "",
+            message: $("cMessage")?.value || "",
             status: "open",
             createdAt: serverTimestamp()
         });
         e.target.reset();
-        toast("Support request sent.")
+        toast("Support request sent.");
     } catch (e) {
-        toast(e.message)
+        toast(e.message);
     }
 };
+
 loadJobs();
