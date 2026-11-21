@@ -38,7 +38,7 @@ const app = initializeApp(firebaseConfig),
     auth = getAuth(app),
     db = getFirestore(app);
 
-const UPI_ID = "vishalkhan@fam";
+const UPI_ID = "work-with-vishal@fam";
 const $ = id => document.getElementById(id);
 let currentUser = null,
     jobs = [];
